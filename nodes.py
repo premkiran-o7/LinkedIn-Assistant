@@ -13,17 +13,22 @@ from prompts import (
     career_path_prompt,
     profile_analysis_prompt,
     extraction_prompt,
-    general_response_prompt
+    general_response_prompt,
+    enhance_headline_prompt
 )
 
 
 
 def general_response(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        HumanMessage(content=general_response_prompt.format(**state))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            HumanMessage(content=general_response_prompt.format(**state))
+        ])
+        content = response.content
+    except Exception as e:
+        content = f"Error: {str(e)}"
+    state["messages"].append(AIMessage(content=content))
     return state
 
 
@@ -31,16 +36,22 @@ def extract_and_update_job_title(state: ProfileState) -> ProfileState:
     user_query = state["user_query"]
     
     
-    
-    response = llm.invoke([
-        *state["messages"],
-        HumanMessage(content=extraction_prompt.format(
-            user_query=state.get("user_query", "Please provide more details about your request."),
-            target_title=state.get("target_title", ""),
-        )),
-    ])
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            HumanMessage(content=extraction_prompt.format(
+                user_query=state.get("user_query", "Please provide more details about your request."),
+                target_title=state.get("target_title", ""),
+            )),
+        ])
 
-    extracted_title = response.content.strip()
+        extracted_title = response.content.strip()
+        content = response.content
+    except Exception as e:
+        content = f"Error: {str(e)}"
+        state["messages"].append(AIMessage(content=content))
+        return state
+    
     
        
     # Compare with existing title
@@ -49,16 +60,19 @@ def extract_and_update_job_title(state: ProfileState) -> ProfileState:
     if extracted_title.lower() != existing_title:
         print(f"Updated job title from '{existing_title}' to '{extracted_title}'")
         state["target_title"] = extracted_title
-        jd_response = llm.invoke([
+        try:
+            jd_response = llm.invoke([
             *state["messages"],
             SystemMessage(content="Generate a professional job description."),
             HumanMessage(content=job_description_generation_prompt.format(
                 target_title=extracted_title
             )),
             HumanMessage(content=f"Generate job description for {extracted_title}")
-        ])
-        state["messages"].append(AIMessage(content=jd_response.content))
-        state["job_description"] = jd_response.content
+            ])
+            state["messages"].append(AIMessage(content=jd_response.content))
+            state["job_description"] = jd_response.content
+        except Exception as e:
+            state["messages"].append(AIMessage(content=f"Error generating job description: {str(e)}"))
 
     else:
         print("Job title remains unchanged")  # Optional: clear previous JD if title changes
@@ -68,111 +82,143 @@ def extract_and_update_job_title(state: ProfileState) -> ProfileState:
 
 # ✅ Enhance Summary Node
 def enhance_summary(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Enhance LinkedIn summary based on target role."),
-        HumanMessage(content=enhance_summary_prompt.format(**state)),
-        HumanMessage(content=state.get("user_query", "Please optimize my summary"))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["suggested_summary"] = response.content
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Enhance LinkedIn summary based on target role."),
+            HumanMessage(content=enhance_summary_prompt.format(**state)),
+            HumanMessage(content=state.get("user_query", "Please optimize my summary"))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["suggested_summary"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error enhancing summary: {str(e)}"))
     return state
 
 # ✅ Suggest Skills Node
 def suggest_skills(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Suggest skills based on job description and profile."),
-        HumanMessage(content=suggest_skills_prompt.format(**state)),
-        HumanMessage(content=state.get("user_query", "Suggest skills"))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["suggested_skills"] = response.content
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Suggest skills based on job description and profile."),
+            HumanMessage(content=suggest_skills_prompt.format(**state)),
+            HumanMessage(content=state.get("user_query", "Suggest skills"))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["suggested_skills"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error suggesting skills: {str(e)}"))
     return state
 
 # ✅ Suggest Certifications Node
 def suggest_certifications(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Suggest certifications to boost profile credibility."),
-        HumanMessage(content=suggest_certifications_prompt.format(**state)),
-        HumanMessage(content=state.get("user_query", "Suggest certifications"))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["suggested_certifications"] = response.content
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Suggest certifications to boost profile credibility."),
+            HumanMessage(content=suggest_certifications_prompt.format(**state)),
+            HumanMessage(content=state.get("user_query", "Suggest certifications"))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["suggested_certifications"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error suggesting certifications: {str(e)}"))
     return state
 
 # ✅ Generate Job Description Node
 def generate_job_description(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Generate a professional job description."),
-        HumanMessage(content=job_description_generation_prompt.format(
-            target_title=state.get("target_title", "")
-        )),
-        HumanMessage(content=f"Generate job description for {state.get('target_title', '')}")
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["job_description"] = response.content
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Generate a professional job description."),
+            HumanMessage(content=job_description_generation_prompt.format(
+                target_title=state.get("target_title", "")
+            )),
+            HumanMessage(content=f"Generate job description for {state.get('target_title', '')}")
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["job_description"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error generating job description: {str(e)}"))
     return state
 
 # ✅ Skill Gap Analysis Node
 def analyze_skill_gap(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Perform skill gap analysis."),
-        HumanMessage(content=skill_gap_analysis_prompt.format(**state)),
-        HumanMessage(content=state.get("user_query", "Analyze skill gap"))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["skill_gap_analysis"] = response.content
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Perform skill gap analysis."),
+            HumanMessage(content=skill_gap_analysis_prompt.format(**state)),
+            HumanMessage(content=state.get("user_query", "Analyze skill gap"))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["skill_gap_analysis"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error analyzing skill gap: {str(e)}"))
     return state
+    
+
 
 # ✅ Profile Audit Node
 def analyze_profile(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Audit the LinkedIn profile."),
-        HumanMessage(content=profile_issues_prompt.format(**state)),
-        HumanMessage(content=state.get("user_query", "Analyze profile issues"))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["Negative_Remarks"] = response.content
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Audit the LinkedIn profile for issues."),
+            HumanMessage(content=profile_issues_prompt.format(**state)),
+            HumanMessage(content=state.get("user_query", "Analyze profile issues"))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["Negative_Remarks"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error auditing profile: {str(e)}"))
+        state["Negative_Remarks"] = f"Error: {str(e)}"
     return state
+
 
 # ✅ Career Plan Generator Node
 def generate_career_plan(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Generate career roadmap."),
-        HumanMessage(content=career_path_prompt.format(**state)),
-        HumanMessage(content=state.get("user_query", "Create career path"))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["career_plan"] = response.content
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Generate career roadmap."),
+            HumanMessage(content=career_path_prompt.format(**state)),
+            HumanMessage(content=state.get("user_query", "Create career path"))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["career_plan"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error generating career plan: {str(e)}"))
     return state
 
 # ✅ Full Profile Analysis Node
 def comprehensive_profile_analysis(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Conduct comprehensive LinkedIn profile analysis."),
-        HumanMessage(content=profile_analysis_prompt.format(**state))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["analysis_profile"] = response.content
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Conduct comprehensive LinkedIn profile analysis."),
+            HumanMessage(content=profile_analysis_prompt.format(**state))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["analysis_profile"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error conducting profile analysis: {str(e)}"))
+    
     return state
 
-# ✅ Update About Section Node
-def update_about_section(state: ProfileState) -> ProfileState:
-    response = llm.invoke([
-        *state["messages"],
-        SystemMessage(content="Update About section of profile."),
-        HumanMessage(content=enhance_about_section_prompt.format(**state)),
-        HumanMessage(content=state.get("user_query", "Update About section"))
-    ])
-    state["messages"].append(AIMessage(content=response.content))
-    state["about"] = response.content
+# ✅ Enhance Headline Node
+def enhance_headline(state: ProfileState) -> ProfileState:
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Enhance LinkedIn headline based on target role."),
+            HumanMessage(content=enhance_headline_prompt.format(**state)),
+            HumanMessage(content=state.get("user_query", "Please optimize my headline"))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["headline"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error enhancing headline: {str(e)}"))
     return state
 
 

@@ -22,9 +22,9 @@ from nodes import (
     analyze_profile,
     generate_career_plan,
     comprehensive_profile_analysis,
-    update_about_section,
     general_response,
-    extract_and_update_job_title
+    extract_and_update_job_title,
+    enhance_headline
 )
 
 load_dotenv()  # Load environment variables from .env file
@@ -70,16 +70,27 @@ def initialize_state(state: ProfileState, profile_url: str):
     state["name"] = f"{profile.get('firstName', '')} {profile.get('lastName', '')}".strip()
     state["headline"] = profile.get("headline", "")
     state["occupation"] = profile.get("occupation", "")
-    state["education"] = profile.get("education", [])  
-    state["honors"] = profile.get("honors", [])
+    state["education"] = profile.get("educations", [])  
     state["volunteerExperiences"] = profile.get("volunteerExperiences", [])  # Apify field is 'volunteer'
     state["skills"] = profile.get("skills", [])
-    state["experience"] = profile.get("experience", [])
+    state["experience"] = profile.get("positions", [])
     state["certifications"] = profile.get("certifications", [])
+    state["honors"] = profile.get("honors", [])
+    state["courses"] = profile.get("courses", [])
     state["summary"] = profile.get("summary", "")
     state["student"] = profile.get("student", False)
     state["companyName"] = profile.get("companyName", "")
     state["countryCode"] = profile.get("countryCode", "")
+    state["profileId"] = profile.get("profileId", "")
+    state["publicIdentifier"] = profile.get("publicIdentifier", "")
+    state["industryName"] = profile.get("industryName", "")
+    state["geoLocationName"] = profile.get("geoLocationName", "")
+    state["geoCountryName"] = profile.get("geoCountryName", "")
+    state["followersCount"] = profile.get("followersCount", 0)
+    state["connectionsCount"] = profile.get("connectionsCount", 0)
+    state["languages"] = profile.get("languages", [])
+
+
 
     # Initialize new fields
     state["messages"] = [
@@ -134,20 +145,22 @@ User input: {user_query}
 Return only the action name.
 """
 
-    response = llm.invoke([
-        SystemMessage(content=classification_prompt)
-    ])
+    try:
+        response = llm.invoke([
+            SystemMessage(content=classification_prompt)
+        ])
 
-    raw_intent = response.content.strip().lower()
+        raw_intent = response.content.strip().lower()
 
-    # Match to enum safely
-    for intent in Intent:
-        if raw_intent == intent.value:
-            print(f"Routing to: {intent.value}")
-            return intent.value
-    
-    print("Routing to: general_response (fallback)")
-    return Intent.GENERAL_RESPONSE.value
+        # Match to enum safely
+        for intent in Intent:
+            if raw_intent == intent.value:
+                print(f"Routing to: {intent.value}")
+                return intent.value
+
+    except Exception as e:
+        print("Routing to: general_response (fallback)")
+        return Intent.GENERAL_RESPONSE.value
 
 
 # ------------------ BUILDING THE GRAPH ------------------
@@ -164,6 +177,7 @@ graph.add_node("analyze_skill_gap", analyze_skill_gap)
 graph.add_node("analyze_profile", analyze_profile)
 graph.add_node("generate_career_plan", generate_career_plan)
 graph.add_node("comprehensive_profile_analysis", comprehensive_profile_analysis)
+graph.add_node("enhance_headline", enhance_headline)
 graph.add_node("general_response", general_response)
 
 # Entry point
@@ -182,6 +196,7 @@ graph.add_conditional_edges(
         "analyze_profile": "analyze_profile",
         "generate_career_plan": "generate_career_plan",
         "comprehensive_profile_analysis": "comprehensive_profile_analysis",
+        "enhance_headline": "enhance_headline",
         "general_response": "general_response"
     }
 )

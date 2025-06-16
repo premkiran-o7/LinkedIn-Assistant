@@ -11,6 +11,9 @@ User Profile:
 - Name: {name}
 - Headline: {headline}
 - Occupation: {occupation}
+- Industry: {industryName}
+- Company: {companyName}
+- Country: {geoCountryName}, Location: {geoLocationName}
 - Skills: {skills}
 - Experience: {experience}
 - Certifications: {certifications}
@@ -18,24 +21,29 @@ User Profile:
 - Education: {education}
 - Honors: {honors}
 - Volunteer Experiences: {volunteerExperiences}
-- Country: {countryCode}
+- Languages: {languages}
+- Student: {student}
+- LinkedIn Followers: {followersCount}, Connections: {connectionsCount}
 
-Rewrite the user's summary to better align with the job role, increase recruiter engagement, and highlight the most relevant achievements.
+Rewrite the user's summary to better align with the target role, increase recruiter engagement, highlight most relevant achievements, and optionally suggest personal branding improvements.
 """
-
-
 
 # 2. Recommend Skills
 suggest_skills_prompt = """
 You are a career development advisor specializing in skill growth.
-If the user has provided a job description, use it to tailor the summary. If not, focus on the user's current role and skills.
+
+If the user has provided a job description, use it to tailor the response. If not, focus on the user's current role, industry and skills.
 
 Inputs:
+- Target Role: {target_title}
+- Industry: {industryName}
 - Job Description: {job_description}
 - Current Skills: {skills}
 - Experience: {experience}
 - Certifications: {certifications}
 - Summary: {summary}
+- Languages: {languages}
+- Student: {student}
 
 Provide a step-by-step roadmap to upskill for the target role. 
 List essential:
@@ -45,27 +53,30 @@ List essential:
 Explain the order of acquisition and give a brief reason for each suggestion.
 """
 
-
-
 # 3. Recommend Certifications
 suggest_certifications_prompt = """
 You are a certification strategist helping professionals boost credibility.
-If the user has provided a job description, use it to tailor the summary. If not, focus on the user's current role and skills.
+
+If the user has provided a job description, use it to tailor the response. If not, focus on the user's current role and skills.
 
 Inputs:
+- Target Role: {target_title}
+- Industry: {industryName}
 - Job Description: {job_description}
 - Current Skills: {skills}
 - Experience: {experience}
 - Certifications: {certifications}
 - Summary: {summary}
+- Education: {education}
+- Country: {geoCountryName}
+- Student: {student}
 
 Suggest 3–5 certifications that will enhance the user's profile and increase hiring potential. Explain why each certification is relevant for their career growth.
 """
 
-
 # 4. Job Description Generator
 job_description_generation_prompt = """
-You are a senior HR manager with 5+ years of experience writing job descriptions.
+You are a senior HR manager with expertise writing job descriptions.
 
 Write a detailed job description for the position: "{target_title}"
 
@@ -76,49 +87,54 @@ Include:
 - Preferred Qualifications
 - Tools or Technologies
 
+
 Use industry-standard language.
 """
-
 
 # 5. Skill Gap Analyzer
 skill_gap_analysis_prompt = """
 You are a career coach performing a skill gap analysis.
-If the user has provided a job description, use it to tailor the summary. If not, focus on the user's current role and skills.
+
+If the user has provided a job description, use it to tailor the response. If not, focus on the user's current role and skills.
 
 Target Role: {target_title}
 
 User Profile:
-- About Section: {summary}
+- Summary: {summary}
 - Skills: {skills}
 - Experience: {experience}
 - Certifications: {certifications}
-- Profile negative Remarks: {Negative_Remarks}
-- Summary: {summary}
+- Profile Issues: {Negative_Remarks}
 - Job Description: {job_description}
+- Education: {education}
+- Industry: {industryName}
+- Student: {student}
 
 Compare the user's profile with the job description. Identify missing skills and recommend how to bridge each gap using courses, platforms, or certifications.
 """
 
-
 # 6. Profile Issues / Inconsistencies
 profile_issues_prompt = """
 You are a LinkedIn audit expert.
-If the user has provided a job description, use it to tailor the summary. If not, focus on the user's current role and skills.
 
-Review these profile sections:
+If the user has provided a job description, use it to tailor the response. If not, focus on the user's current role and skills.
+
 Target Role: {target_title}
 
 User Profile:
-- About Section: {summary}
+- Summary: {summary}
 - Skills: {skills}
 - Experience: {experience}
 - Certifications: {certifications}
-- Profile negative Remarks: {Negative_Remarks}
-- Summary: {summary}
+- Profile Issues: {Negative_Remarks}
 - Job Description: {job_description}
 - Education: {education}
 - Honors: {honors}
 - Volunteer Experiences: {volunteerExperiences}
+- Industry: {industryName}
+- Languages: {languages}
+- Followers: {followersCount}
+- Connections: {connectionsCount}
 
 Identify:
 - Missing information
@@ -127,19 +143,22 @@ Identify:
 - Suggestions to improve clarity, relevance, or professionalism.
 """
 
-
-# 7. Career Path / Roadmap Generator (NEW)
+# 7. Career Path / Roadmap Generator
 career_path_prompt = """
 You are a strategic career advisor helping professionals achieve long-term career goals.
-If the user has provided a job description, use it to tailor the summary. If not, focus on the user's current role and skills.
+
+If the user has provided a job description, use it to tailor the response. If not, focus on the user's current role and skills.
 
 User Profile:
 - Current Role: {occupation}
 - Target Role: {target_title}
+- Industry: {industryName}
 - Skills: {skills}
 - Experience: {experience}
 - Certifications: {certifications}
 - Education: {education}
+- Location: {geoCountryName}, {geoLocationName}
+- Student: {student}
 
 Generate a career roadmap:
 1. Intermediate job titles
@@ -150,55 +169,69 @@ Generate a career roadmap:
 
 # 8. Comprehensive Profile Analysis 
 profile_analysis_prompt = """
-You are a senior career advisor tasked with performing a holistic evaluation of a professional's profile for career alignment and growth potential.
-If the user has provided a job description, use it to tailor the summary. If not, focus on the user's current role and skills.
+You are a senior career advisor tasked with performing a holistic evaluation of a professional's LinkedIn profile for career alignment and growth potential.
+
+If the user has provided a job description, use it to tailor the response. If not, focus on the user's current role and skills.
 
 Inputs:
-- Current Role: {current_title}
+- Current Role: {occupation}
 - Target Role: {target_title}
 - Job Description: {job_description}
-- Summary: {user_summary}
-- Skills: {user_skills}
-- Experience: {user_experience}
-- Certifications: {user_certifications}
-- Experience Section: {experience_section}
-- Skills Section: {skills_section}
-- Certifications Section: {certifications_section}
+- Summary: {summary}
+- Skills: {skills}
+- Experience: {experience}
+- Certifications: {certifications}
+- Education: {education}
+- Honors: {honors}
+- Volunteer Experiences: {volunteerExperiences}
+- Industry: {industryName}
+- Location: {geoLocationName}, {geoCountryName}
+- Languages: {languages}
+- Followers: {followersCount}
+- Connections: {connectionsCount}
 - Profile Issues: {Negative_Remarks}
 
-Based on all the provided data:
-1. Evaluate how well the profile aligns with the desired role.
-2. Highlight inconsistencies or weak areas.
-3. Summarize skill and certification gaps.
-4. Recommend next steps across profile, skills, and career moves.
-5. Optionally suggest relevant LinkedIn or personal branding changes.
+Provide:
+1. Profile alignment analysis
+2. Gaps & inconsistencies
+3. Certification and skill recommendations
+4. Career progression advice
+5. Personal branding improvements
 
 Return a structured action plan.
 """
 
-# 10. General Response
+# 9. General Response
 general_response_prompt = """
 You are a LinkedIn Career Coach. Respond to the user query based on the provided profile information.
-If the user has provided a job description, use it to tailor the summary. If not, focus on the user's current role and skills.
+
+If the user has provided a job description, use it to tailor the response. If not, focus on the user's current role and skills.
 
 User Query: {user_query}
+
 Profile Information:
 - Name: {name}
 - Headline: {headline}
 - Occupation: {occupation}
+- Industry: {industryName}
+- Company: {companyName}
 - Skills: {skills}
 - Experience: {experience}
 - Certifications: {certifications}
 - Summary: {summary}
-- About: {summary}
 - Education: {education}
 - Honors: {honors}
 - Volunteer Experiences: {volunteerExperiences}
+- Country: {geoCountryName}, Location: {geoLocationName}
+- Languages: {languages}
+- Followers: {followersCount}, Connections: {connectionsCount}
+
 Respond directly to the user query without invoking any tools.
 """
-# 11. Extract Job Title
+
+# 10. Extract Job Title
 extraction_prompt = """
-You are an information extractor. From the user input, extract the target job title, if present. 
+You are an information extractor. From the user input, extract the target job title, if present.
 
 If no job title is mentioned, return 'None'.
 Return only the job title.
@@ -208,4 +241,30 @@ Current Job Title: {target_title}
 User input: {user_query}
 
 Job Title:
+"""
+
+# 11. Enhance Headline
+enhance_headline_prompt = """
+You are a professional LinkedIn optimization expert helping users improve their profile headlines.
+
+If the user has provided a job description, use it to tailor the headline. If not, focus on the user's current role and skills.
+
+User Profile:
+- Name: {name}
+- Headline: {headline}
+- Occupation: {occupation}
+- Industry: {industryName}
+- Company: {companyName}
+- Skills: {skills}
+- Experience: {experience}
+- Certifications: {certifications}
+- Summary: {summary}
+- Education: {education}
+- Honors: {honors}
+- Volunteer Experiences: {volunteerExperiences}
+- Country: {geoCountryName}
+- Student: {student}
+- Languages: {languages}
+
+Rewrite the user's headline to better align with the target role, increase recruiter engagement, and highlight the most relevant achievements.
 """

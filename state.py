@@ -14,6 +14,7 @@ class Intent(enum.Enum):
     ANALYZE_PROFILE = "analyze_profile"
     GENERATE_CAREER_PLAN = "generate_career_plan"
     GENERAL_RESPONSE = "general_response"
+    ENHANCE_HEADLINE = "enhance_headline"
 
 
 class ProfileState(TypedDict, total=False):
@@ -28,21 +29,32 @@ class ProfileState(TypedDict, total=False):
     skills: List[str]
     experience: List[Dict]
     certifications: List[Dict]
+    courses: List[Dict]
     summary: str
     about: str
     student : bool
     companyName : str
     countryCode: str
+    profileId: str
+    publicIdentifier: str
+    industryName: str
+    geoLocationName: str
+    geoCountryName: str
+    followersCount: int
+    connectionsCount: int
+    languages: List[Dict]
 
     # Optional job-related context
-    job_description: str = ''
-    target_title: str = ''
+    job_description: str
+    target_title: str
 
     # Analyzed/improved data
-    suggested_summary: str = ''
+    suggested_summary: str 
     suggested_certifications: List[str]
     suggested_skills: List[str]
-    Negative_Remarks: str = ''
-    analysis_profile: str = ''
+    Negative_Remarks: str
+    analysis_profile: str
+    career_plan: str
+    skill_gap_analysis: str
 
     messages: Annotated[List[BaseMessage], add_messages] 
