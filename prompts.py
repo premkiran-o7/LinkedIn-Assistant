@@ -26,7 +26,9 @@ User Profile:
 - LinkedIn Followers: {followersCount}, Connections: {connectionsCount}
 
 Rewrite the user's summary to better align with the target role, increase recruiter engagement, highlight most relevant achievements, and optionally suggest personal branding improvements.
-"""
+
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them."""
 
 # 2. Recommend Skills
 suggest_skills_prompt = """
@@ -51,6 +53,8 @@ List essential:
 - Soft skills
 
 Explain the order of acquisition and give a brief reason for each suggestion.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
 
 # 3. Recommend Certifications
@@ -72,6 +76,8 @@ Inputs:
 - Student: {student}
 
 Suggest 3–5 certifications that will enhance the user's profile and increase hiring potential. Explain why each certification is relevant for their career growth.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
 
 # 4. Job Description Generator
@@ -88,7 +94,9 @@ Include:
 - Tools or Technologies
 
 
-Use industry-standard language.
+Use industry-standard language and use industry standards for generating the JD.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
 
 # 5. Skill Gap Analyzer
@@ -111,6 +119,8 @@ User Profile:
 - Student: {student}
 
 Compare the user's profile with the job description. Identify missing skills and recommend how to bridge each gap using courses, platforms, or certifications.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
 
 # 6. Profile Issues / Inconsistencies
@@ -141,6 +151,8 @@ Identify:
 - Inconsistencies
 - Outdated phrasing
 - Suggestions to improve clarity, relevance, or professionalism.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
 
 # 7. Career Path / Roadmap Generator
@@ -165,6 +177,8 @@ Generate a career roadmap:
 2. Skills & certifications needed
 3. Estimated timeframe to achieve target role
 4. Personal branding & networking advice
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
 
 # 8. Comprehensive Profile Analysis 
@@ -199,6 +213,8 @@ Provide:
 5. Personal branding improvements
 
 Return a structured action plan.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
 
 # 9. General Response
@@ -206,6 +222,7 @@ general_response_prompt = """
 You are a LinkedIn Career Coach. Respond to the user query based on the provided profile information.
 
 If the user has provided a job description, use it to tailor the response. If not, focus on the user's current role and skills.
+return the answer of length appropriate as per the user query
 
 User Query: {user_query}
 
@@ -227,6 +244,8 @@ Profile Information:
 - Followers: {followersCount}, Connections: {connectionsCount}
 
 Respond directly to the user query without invoking any tools.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
 
 # 10. Extract Job Title
@@ -267,4 +286,6 @@ User Profile:
 - Languages: {languages}
 
 Rewrite the user's headline to better align with the target role, increase recruiter engagement, and highlight the most relevant achievements.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input,Do not assume 
+them.
 """
