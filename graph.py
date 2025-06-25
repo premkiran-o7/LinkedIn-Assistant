@@ -136,15 +136,26 @@ def router(state: ProfileState) -> Intent:
     user_query = state["user_query"]
 
     classification_prompt = f"""
-You are an intent classifier. Given the user input, classify it into one of the following actions:
-{', '.join([i.value for i in Intent])}
+# Instruction
+You are an expert intent classifier. Given a user's input, identify the most appropriate action from the list below. 
+Each action represents a possible user intent for improving or analyzing a LinkedIn profile.
 
-If the intent is not recognized or is not present in the given intents, return 'GENERAL_RESPONSE'.
+# Action List
+{', '.join([intent.name for intent in Intent])}
 
-User input: {user_query}
+# Guidelines
+- Read the user input carefully.
+- Choose only **one** intent from the list.
+- If the input doesn't clearly match any intent, choose `GENERAL_RESPONSE`.
 
-Return only the action name.
+# User Input
+{user_query}
+
+# Response Format
+Only return one of the following enum names:
+{', '.join([intent.name for intent in Intent])}
 """
+
 
     try:
         response = llm.invoke([
@@ -155,7 +166,7 @@ Return only the action name.
 
         # Match to enum safely
         for intent in Intent:
-            if raw_intent == intent.value:
+            if raw_intent == intent.name:
                 print(f"Routing to: {intent.value}")
                 return intent.value
 

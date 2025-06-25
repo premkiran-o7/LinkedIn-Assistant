@@ -10,7 +10,7 @@ load_dotenv()
 # llm = ChatGroq(model_name="llama-3.3-70b-versatile", groq_api_key=groq_api_key, max_retries=3)
 os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 llm = ChatGoogleGenerativeAI(
-    model="models/gemini-2.0-flash",
+    model="models/gemini-2.5-flash",
     max_retries=3,
     temperature=0.1,
 )
