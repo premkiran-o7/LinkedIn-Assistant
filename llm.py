@@ -12,7 +12,6 @@ os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 llm = ChatGoogleGenerativeAI(
     model="models/gemini-2.0-flash",
     max_retries=3,
-    temperature=0.2,
-    top_p=0.95,
+    temperature=0.1,
 )
 

@@ -138,7 +138,8 @@ def router(state: ProfileState) -> Intent:
     classification_prompt = f"""
 You are an intent classifier. Given the user input, classify it into one of the following actions:
 {', '.join([i.value for i in Intent])}
-If the intent is not recognized, return 'GENERAL_RESPONSE'.
+
+If the intent is not recognized or is not present in the given intents, return 'GENERAL_RESPONSE'.
 
 User input: {user_query}
 
