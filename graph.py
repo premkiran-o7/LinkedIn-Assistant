@@ -66,6 +66,7 @@ def initialize_state(state: ProfileState, profile_url: str):
     # For testing, let's use a local JSON file instead of Apify
     # with open("profile.json", "r") as f:
     #     items = json.load(f)
+    print("Profile data fetched from Apify.", len(items), "items found.")
     profile = items[0] 
 
     # Map Apify profile fields to your state with conversion
@@ -128,7 +129,7 @@ Else, respond directly.""")
     else:
         state["job_description"] = ""
 
-    print("Initialization complete.")
+    print("Initialization complete.",state)
     return state
 
 

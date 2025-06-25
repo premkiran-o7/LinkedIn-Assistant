@@ -38,14 +38,33 @@ def main():
     # Sidebar for LinkedIn URL input
     with st.sidebar:
         st.subheader("Load LinkedIn Profile")
-        linkedin_url_input = st.text_input("Enter LinkedIn Profile URL", value=st.session_state["linkedin_url"])
-        update_clicked = st.button("Update Profile")
+        # Sidebar for LinkedIn URL input
+with st.sidebar:
+    st.subheader("Load LinkedIn Profile")
+    
+    linkedin_url_input = st.text_input(
+        "Enter LinkedIn Profile URL", 
+        value=st.session_state.get("linkedin_url", "")
+    )
+    
+    update_clicked = st.button("Update Profile")
 
-        if update_clicked:
-            # Call your profile loader
-            st.session_state["profile_state"] = initialize_state({}, linkedin_url_input)
-            st.session_state["linkedin_url"] = linkedin_url_input  # Persist URL across reruns
+    if update_clicked:
+        current_url = st.session_state.get("linkedin_url", "")
+        
+        if linkedin_url_input.strip() == "":
+            st.warning("Please enter a LinkedIn URL.")
+        
+        elif linkedin_url_input == current_url:
+            st.info("This profile is already loaded.")
+        
+        else:
+            with st.spinner("Loading profile..."):
+                # Call your profile loader
+                st.session_state["profile_state"] = initialize_state({}, linkedin_url_input)
+                st.session_state["linkedin_url"] = linkedin_url_input  # Persist URL across reruns
             st.success("Profile loaded successfully!")
+
 
     # Check if profile is loaded
     if st.session_state["profile_state"] is not None:
