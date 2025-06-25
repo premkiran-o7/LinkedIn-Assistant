@@ -21,10 +21,12 @@ from nodes import (
     analyze_skill_gap,
     analyze_profile,
     generate_career_plan,
-    comprehensive_profile_analysis,
+    analyze_job_match
+,
     general_response,
     extract_and_update_job_title,
-    enhance_headline
+    enhance_headline,
+    analyze_profile_issues
 )
 
 load_dotenv()  # Load environment variables from .env file
@@ -36,9 +38,6 @@ def initialize_state(state: ProfileState, profile_url: str):
 
     with open("cookies.json", "r") as f:
         cookie_data = json.load(f)
-    
-
-
 
     # Prepare actor input — scrape a specific profile
     run_input = {
@@ -59,26 +58,29 @@ def initialize_state(state: ProfileState, profile_url: str):
     run = client.actor("curious_coder/linkedin-profile-scraper").call(run_input=run_input)
     dataset_id = run["defaultDatasetId"]
 
-    # Fetch scraped profile data
+    # # Fetch scraped profile data
     items = list(client.dataset(dataset_id).iterate_items())
     if not items:
         raise ValueError("No profile data returned from Apify.")
 
-    profile = items[0]
+    # For testing, let's use a local JSON file instead of Apify
+    # with open("profile.json", "r") as f:
+    #     items = json.load(f)
+    profile = items[0] 
 
-    # Map Apify profile fields to your state
+    # Map Apify profile fields to your state with conversion
     state["name"] = f"{profile.get('firstName', '')} {profile.get('lastName', '')}".strip()
     state["headline"] = profile.get("headline", "")
     state["occupation"] = profile.get("occupation", "")
-    state["education"] = profile.get("educations", [])  
-    state["volunteerExperiences"] = profile.get("volunteerExperiences", [])  # Apify field is 'volunteer'
-    state["skills"] = profile.get("skills", [])
-    state["experience"] = profile.get("positions", [])
-    state["certifications"] = profile.get("certifications", [])
-    state["honors"] = profile.get("honors", [])
-    state["courses"] = profile.get("courses", [])
+    state["education"] = json.dumps(profile.get("educations", []))  
+    state["volunteerExperiences"] = json.dumps(profile.get("volunteerExperiences", []))
+    state["skills"] = ", ".join(profile.get("skills", []))
+    state["experience"] = json.dumps(profile.get("positions", []))
+    state["certifications"] = json.dumps(profile.get("certifications", []))
+    state["honors"] = json.dumps(profile.get("honors", []))
+    state["courses"] = json.dumps(profile.get("courses", []))
     state["summary"] = profile.get("summary", "")
-    state["student"] = profile.get("student", False)
+    state["student"] = str(profile.get("student", False))
     state["companyName"] = profile.get("companyName", "")
     state["countryCode"] = profile.get("countryCode", "")
     state["profileId"] = profile.get("profileId", "")
@@ -86,11 +88,9 @@ def initialize_state(state: ProfileState, profile_url: str):
     state["industryName"] = profile.get("industryName", "")
     state["geoLocationName"] = profile.get("geoLocationName", "")
     state["geoCountryName"] = profile.get("geoCountryName", "")
-    state["followersCount"] = profile.get("followersCount", 0)
-    state["connectionsCount"] = profile.get("connectionsCount", 0)
-    state["languages"] = profile.get("languages", [])
-
-
+    state["followersCount"] = str(profile.get("followersCount", 0))
+    state["connectionsCount"] = str(profile.get("connectionsCount", 0))
+    state["languages"] = json.dumps(profile.get("languages", []))
 
     # Initialize new fields
     state["messages"] = [
@@ -101,22 +101,22 @@ Else, respond directly.""")
     ]
 
     state["suggested_summary"] = ""
-    state["suggested_certifications"] = []
-    state["suggested_skills"] = []
+    state["suggested_certifications"] = ""
+    state["suggested_skills"] = ""
     state["analysis_profile"] = ""
     state["career_plan"] = ""
     state["skill_gap_analysis"] = ""
-    state["Negative_Remarks"] = ""
+    state["job_match_analysis"] = ""
+    state["profile_issues"] = ""
 
     # Use occupation as target title (or modify if you have another logic)
-    state["target_title"] = profile.get("occupation", "")
+    state["target_title"] = state["occupation"]
 
     # Optional: Generate job description
     if state["target_title"]:
         print("Generating job description for target title:", state["target_title"])
         jd_response = llm.invoke([
             *state["messages"],
-            SystemMessage(content="Generate a professional job description."),
             HumanMessage(content=job_description_generation_prompt.format(
                 target_title=state["target_title"]
             )),
@@ -131,14 +131,13 @@ Else, respond directly.""")
     return state
 
 
-
-
 def router(state: ProfileState) -> Intent:
     user_query = state["user_query"]
 
     classification_prompt = f"""
 You are an intent classifier. Given the user input, classify it into one of the following actions:
 {', '.join([i.value for i in Intent])}
+If the intent is not recognized, return 'GENERAL_RESPONSE'.
 
 User input: {user_query}
 
@@ -147,7 +146,7 @@ Return only the action name.
 
     try:
         response = llm.invoke([
-            SystemMessage(content=classification_prompt)
+            HumanMessage(content=classification_prompt)
         ])
 
         raw_intent = response.content.strip().lower()
@@ -161,6 +160,9 @@ Return only the action name.
     except Exception as e:
         print("Routing to: general_response (fallback)")
         return Intent.GENERAL_RESPONSE.value
+    
+    print("Intent unrecognized — fallback to general_response")
+    return Intent.GENERAL_RESPONSE.value
 
 
 # ------------------ BUILDING THE GRAPH ------------------
@@ -176,9 +178,11 @@ graph.add_node("generate_job_description", generate_job_description)
 graph.add_node("analyze_skill_gap", analyze_skill_gap)
 graph.add_node("analyze_profile", analyze_profile)
 graph.add_node("generate_career_plan", generate_career_plan)
-graph.add_node("comprehensive_profile_analysis", comprehensive_profile_analysis)
+graph.add_node("analyze_job_match", analyze_job_match
+)
 graph.add_node("enhance_headline", enhance_headline)
 graph.add_node("general_response", general_response)
+graph.add_node("analyze_profile_issues", analyze_profile_issues)
 
 # Entry point
 graph.add_edge(START,"extract_and_update_job_title")
@@ -195,9 +199,10 @@ graph.add_conditional_edges(
         "analyze_skill_gap": "analyze_skill_gap",
         "analyze_profile": "analyze_profile",
         "generate_career_plan": "generate_career_plan",
-        "comprehensive_profile_analysis": "comprehensive_profile_analysis",
+        "analyze_job_match": "analyze_job_match",
         "enhance_headline": "enhance_headline",
-        "general_response": "general_response"
+        "general_response": "general_response",
+        "analyze_profile_issues": "analyze_profile_issues"
     }
 )
 

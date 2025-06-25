@@ -6,7 +6,7 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 import enum
 
 class Intent(enum.Enum):
-    UPDATE_SUMMARY_SECTION = "enhance_summary"
+    UPDATE_SUMMARY_OR_ABOUT_SECTION = "enhance_summary"
     SUGGEST_SKILLS = "suggest_skills"
     SUGGEST_CERTIFICATIONS = "suggest_certifications"
     GENERATE_JOB_DESCRIPTION = "generate_job_description"
@@ -15,46 +15,48 @@ class Intent(enum.Enum):
     GENERATE_CAREER_PLAN = "generate_career_plan"
     GENERAL_RESPONSE = "general_response"
     ENHANCE_HEADLINE = "enhance_headline"
+    ANALYZE_JOB_MATCH = "analyze_job_match"
+    ANALYZE_PROFILE_ISSUES = "analyze_profile_issues"
 
 
 class ProfileState(TypedDict, total=False):
     # Basic imported profile fields
-    user_query : str
+    user_query: str
     name: str
     headline: str
     occupation: str
-    education: List[Dict]
-    honors: List[Dict]
-    volunteerExperiences: List[Dict]
-    skills: List[str]
-    experience: List[Dict]
-    certifications: List[Dict]
-    courses: List[Dict]
+    education: str
+    honors: str
+    volunteerExperiences: str
+    skills: str
+    experience: str
+    certifications: str
+    courses: str
     summary: str
-    about: str
-    student : bool
-    companyName : str
+    student: str  # bool -> str
+    companyName: str
     countryCode: str
     profileId: str
     publicIdentifier: str
     industryName: str
     geoLocationName: str
     geoCountryName: str
-    followersCount: int
-    connectionsCount: int
-    languages: List[Dict]
+    followersCount: str  # int -> str
+    connectionsCount: str  # int -> str
+    languages: str
 
     # Optional job-related context
     job_description: str
     target_title: str
 
     # Analyzed/improved data
-    suggested_summary: str 
-    suggested_certifications: List[str]
-    suggested_skills: List[str]
-    Negative_Remarks: str
-    analysis_profile: str
+    suggested_summary: str
+    suggested_certifications: str  # List[str] -> str
+    suggested_skills: str          # List[str] -> str
+    profile_issues: str
+    profile_analysis: str
     career_plan: str
     skill_gap_analysis: str
+    job_match_analysis: str
 
-    messages: Annotated[List[BaseMessage], add_messages] 
+    messages: Annotated[List[BaseMessage], add_messages]
