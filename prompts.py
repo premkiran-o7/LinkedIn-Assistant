@@ -171,7 +171,7 @@ Generate a career roadmap:
 2. Skills & certifications needed
 3. Estimated timeframe to achieve target role
 4. Personal branding & networking advice
-If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input, do not assume them. Be brief, max 8–10 lines.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input, do not assume them.
 """
 
 # 8. Comprehensive Profile Analysis 
@@ -205,7 +205,7 @@ Provide:
 4. Career progression advice
 5. Personal branding improvements
 
-If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input, do not assume them. Be concise and return output in 10 lines.
+If there are any empty fields, do not consider them and do not assume information about the user for generating the answer. If there are any unknown fields not given in input, do not assume them. Be concise.
 """
 
 # 9. General Response

@@ -17,6 +17,7 @@ class Intent(enum.Enum):
     ENHANCE_HEADLINE = "enhance_headline"
     ANALYZE_JOB_MATCH = "analyze_job_match"
     ANALYZE_PROFILE_ISSUES = "analyze_profile_issues"
+    SUGGEST_COURSES = "suggest_courses"
 
 
 class ProfileState(TypedDict, total=False):
@@ -52,7 +53,8 @@ class ProfileState(TypedDict, total=False):
     # Analyzed/improved data
     suggested_summary: str
     suggested_certifications: str  # List[str] -> str
-    suggested_skills: str          # List[str] -> str
+    suggested_skills: str   
+    suggested_courses: str       # List[str] -> str
     profile_issues: str
     profile_analysis: str
     career_plan: str

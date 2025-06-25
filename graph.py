@@ -21,12 +21,12 @@ from nodes import (
     analyze_skill_gap,
     analyze_profile,
     generate_career_plan,
-    analyze_job_match
-,
+    analyze_job_match,
     general_response,
     extract_and_update_job_title,
     enhance_headline,
-    analyze_profile_issues
+    analyze_profile_issues,
+    suggest_courses
 )
 
 load_dotenv()  # Load environment variables from .env file
@@ -108,6 +108,7 @@ Else, respond directly.""")
     state["skill_gap_analysis"] = ""
     state["job_match_analysis"] = ""
     state["profile_issues"] = ""
+    state["suggested_courses"] = ""
 
     # Use occupation as target title (or modify if you have another logic)
     state["target_title"] = state["occupation"]
@@ -183,6 +184,7 @@ graph.add_node("analyze_job_match", analyze_job_match
 graph.add_node("enhance_headline", enhance_headline)
 graph.add_node("general_response", general_response)
 graph.add_node("analyze_profile_issues", analyze_profile_issues)
+graph.add_node("suggest_courses", suggest_courses)
 
 # Entry point
 graph.add_edge(START,"extract_and_update_job_title")
@@ -202,7 +204,8 @@ graph.add_conditional_edges(
         "analyze_job_match": "analyze_job_match",
         "enhance_headline": "enhance_headline",
         "general_response": "general_response",
-        "analyze_profile_issues": "analyze_profile_issues"
+        "analyze_profile_issues": "analyze_profile_issues",
+        "suggest_courses": "suggest_courses"
     }
 )
 

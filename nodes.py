@@ -234,5 +234,17 @@ def enhance_headline(state: ProfileState) -> ProfileState:
         state["messages"].append(AIMessage(content=f"Error enhancing headline: {str(e)}"))
     return state
 
-
+def suggest_courses(state: ProfileState) -> ProfileState:
+    try:
+        response = llm.invoke([
+            *state["messages"],
+            SystemMessage(content="Suggest courses to boost profile credibility."),
+            HumanMessage(content=suggest_certifications_prompt.format(**state)),
+            HumanMessage(content=state.get("user_query", "Suggest certifications"))
+        ])
+        state["messages"].append(AIMessage(content=response.content))
+        state["suggested_courses"] = response.content
+    except Exception as e:
+        state["messages"].append(AIMessage(content=f"Error suggesting certifications: {str(e)}"))
+    return state
 
