@@ -1,12 +1,17 @@
 import os
-import streamlit as st
 from dotenv import load_dotenv
 from graph import initialize_state
 from state import ProfileState
 from graph import career_graph  # LangGraph you built
 from langchain_core.messages import HumanMessage, AIMessage
 import uuid
+import streamlit as st
 
+# Set page config FIRST
+st.set_page_config(
+    page_title="LinkedIn Career Coach",
+    page_icon="🧑‍💼"
+)
 # Load environment variables if any
 load_dotenv()
 
@@ -32,7 +37,6 @@ def convert_message_obj_to_lc(msg):
         raise ValueError("Unknown message type.")
 
 def main():
-    st.set_page_config(page_title="LinkedIn Career Coach", page_icon="🧑‍💼")
     st.title("LinkedIn Career Coach")
 
     # Sidebar for LinkedIn URL input
